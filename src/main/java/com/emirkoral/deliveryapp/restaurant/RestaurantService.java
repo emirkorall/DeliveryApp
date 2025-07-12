@@ -1,20 +1,27 @@
 package com.emirkoral.deliveryapp.restaurant;
 
+import com.emirkoral.deliveryapp.restaurant.dto.RestaurantRequest;
+import com.emirkoral.deliveryapp.restaurant.dto.RestaurantResponse;
+
 import java.util.List;
 import java.util.Optional;
 
 public interface RestaurantService {
-    List<Restaurant> findAll();
+    List<RestaurantResponse> findAllRestaurants();
 
-    Optional<Restaurant> findById(Long id);
+    RestaurantResponse findRestaurantById(Long id);
 
-    List<Restaurant> findByOwnerId(Long ownerId);
+    List<RestaurantResponse> findByOwnerId(Long ownerId);
 
-    List<Restaurant> findByIsActive(boolean isActive);
+    List<RestaurantResponse> findByIsActive(boolean isActive);
 
-    List<Restaurant> findNearbyRestaurants(double lat, double lng, double radiusInMeters);
+    List<RestaurantResponse> findNearbyRestaurants(double lat, double lng, double radiusInMeters);
 
-    Restaurant save(Restaurant restaurant);
+    List<RestaurantResponse> searchRestaurants(String name, String cuisineType, Boolean isActive);
 
-    void deleteById(Long id);
+    RestaurantResponse saveRestaurant(RestaurantRequest request);
+
+    RestaurantResponse updateRestaurant(Long id, RestaurantRequest request);
+
+    RestaurantResponse deleteRestaurantById(Long id);
 }

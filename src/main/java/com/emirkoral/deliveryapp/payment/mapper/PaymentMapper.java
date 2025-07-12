@@ -6,15 +6,14 @@ import com.emirkoral.deliveryapp.payment.Payment;
 import com.emirkoral.deliveryapp.payment.dto.PaymentRequest;
 import com.emirkoral.deliveryapp.payment.dto.PaymentResponse;
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
 
 @Mapper(componentModel = "spring")
 public interface PaymentMapper {
 
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "order.id", source = "orderId")
     Payment toEntity(PaymentRequest request);
 
-    @Mapping(target = "orderId", source = "order.id")
     PaymentResponse toResponse(Payment payment);
+
+    void updateEntityFromRequest(PaymentRequest request, @MappingTarget Payment payment);
 }

@@ -1,20 +1,27 @@
 package com.emirkoral.deliveryapp.orderitem;
 
+import com.emirkoral.deliveryapp.orderitem.dto.OrderItemRequest;
+import com.emirkoral.deliveryapp.orderitem.dto.OrderItemResponse;
+
 import java.util.List;
 import java.util.Optional;
 
 public interface OrderItemService {
-    List<OrderItem> findAll();
+    List<OrderItemResponse> findAllOrderItems();
 
-    Optional<OrderItem> findById(Long id);
+    OrderItemResponse findOrderItemById(Long id);
 
-    List<OrderItem> findOrderById(Long orderId);
+    List<OrderItemResponse> findOrderItemsByOrderId(Long orderId);
 
-    List<OrderItem> findByMenuItemId(Long menuItemId);
+    List<OrderItemResponse> findOrderItemsByMenuItemId(Long menuItemId);
 
-    OrderItem save(OrderItem orderItem);
+    OrderItemResponse saveOrderItem(OrderItemRequest request);
 
-    void deleteById(Long id);
+    OrderItemResponse updateOrderItem(Long id, OrderItemRequest request);
+
+    OrderItemResponse deleteOrderItemById(Long id);
+
+    List<OrderItemResponse> searchOrderItems(Long orderId, Long menuItemId, Integer minQuantity, Integer maxQuantity);
 
 
 }

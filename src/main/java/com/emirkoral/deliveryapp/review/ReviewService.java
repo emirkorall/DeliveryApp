@@ -1,21 +1,23 @@
 package com.emirkoral.deliveryapp.review;
 
+import com.emirkoral.deliveryapp.review.dto.ReviewRequest;
+import com.emirkoral.deliveryapp.review.dto.ReviewResponse;
+
 import java.util.List;
-import java.util.Optional;
 
 public interface ReviewService {
 
-    List<Review> findAll();
+    List<ReviewResponse> findAllReviews();
 
-    Optional<Review> findById(Long id);
+    ReviewResponse findReviewById(Long id);
 
-    List<Review> findByRestaurantId(Long restaurantId);
+    List<ReviewResponse> findReviewsByRestaurantId(Long restaurantId);
 
-    List<Review> findByCustomerId(Long customerId);
+    List<ReviewResponse> findReviewsByCustomerId(Long customerId);
 
-    List<Review> findByOrderId(Long orderId);
+    List<ReviewResponse> findReviewsByOrderId(Long orderId);
 
-    Review save(Review review);
+    ReviewResponse createReview(ReviewRequest request);
 
-    void deleteById(Long id);
+    ReviewResponse deleteReviewById(Long id);
 }

@@ -1,58 +1,137 @@
 package com.emirkoral.deliveryapp.delivery;
 
+import com.emirkoral.deliveryapp.delivery.dto.DeliveryRequest;
+import com.emirkoral.deliveryapp.delivery.dto.DeliveryResponse;
+import com.emirkoral.deliveryapp.delivery.mapper.DeliveryMapper;
+import com.emirkoral.deliveryapp.exception.ResourceNotFoundException;
+import com.emirkoral.deliveryapp.order.OrderRepository;
+import com.emirkoral.deliveryapp.user.UserRepository;
+import com.emirkoral.deliveryapp.deliveryadress.DeliveryAddressRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class DeliveryServiceImpl implements DeliveryService {
 
     private final DeliveryRepository deliveryRepository;
+    private final DeliveryMapper deliveryMapper;
+    private final OrderRepository orderRepository;
+    private final UserRepository userRepository;
+    private final DeliveryAddressRepository deliveryAddressRepository;
 
-    public DeliveryServiceImpl(DeliveryRepository deliveryRepository) {
+    public DeliveryServiceImpl(DeliveryRepository deliveryRepository, DeliveryMapper deliveryMapper, OrderRepository orderRepository, UserRepository userRepository, DeliveryAddressRepository deliveryAddressRepository) {
         this.deliveryRepository = deliveryRepository;
+        this.deliveryMapper = deliveryMapper;
+        this.orderRepository = orderRepository;
+        this.userRepository = userRepository;
+        this.deliveryAddressRepository = deliveryAddressRepository;
     }
 
     @Override
-    public List<Delivery> findAll() {
-        return deliveryRepository.findAll();
+    public List<DeliveryResponse> findAllDeliveries() {
+        return deliveryRepository.findAll().stream()
+                .map(deliveryMapper::toResponse)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public Optional<Delivery> findById(Long id) {
-        return deliveryRepository.findById(id);
+    public DeliveryResponse findDeliveryById(Long id) {
+        Delivery delivery = deliveryRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Delivery not found with id: " + id));
+        return deliveryMapper.toResponse(delivery);
+
     }
 
     @Override
-    public List<Delivery> findByDriverId(Long driverId) {
-        return deliveryRepository.findByDriverId(driverId);
+    public List<DeliveryResponse> findDeliveriesByDriverId(Long driverId) {
+        return deliveryRepository.findByDriverId(driverId).stream()
+                .map(deliveryMapper::toResponse)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public List<Delivery> findByStatus(Delivery.Status status) {
-        return deliveryRepository.findByStatus(status);
+    public List<DeliveryResponse> findDeliveriesByStatus(Delivery.Status status) {
+        return deliveryRepository.findByStatus(status).stream()
+                .map(deliveryMapper::toResponse)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public List<Delivery> findByOrderId(Long orderId) {
-        return deliveryRepository.findByOrderId(orderId);
+    public List<DeliveryResponse> findDeliveriesByOrderId(Long orderId) {
+        return deliveryRepository.findByOrderId(orderId).stream()
+                .map(deliveryMapper::toResponse)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public List<Delivery> findByDriverIdAndCreatedAtBetween(Long driverId, LocalDateTime start, LocalDateTime end) {
-        return deliveryRepository.findByDriverIdAndCreatedAtBetween(driverId, start, end);
+    public List<DeliveryResponse> findDeliveriesByDriverIdAndCreatedAtBetween(Long driverId, LocalDateTime start, LocalDateTime end) {
+        return deliveryRepository.findByDriverIdAndCreatedAtBetween(driverId, start, end)
+                .stream()
+                .map(deliveryMapper::toResponse)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public Delivery save(Delivery delivery) {
-        return deliveryRepository.save(delivery);
+    public List<DeliveryResponse> findByDriverIdAndCreatedAtBetween(Long driverId, LocalDateTime start, LocalDateTime end) {
+        return deliveryRepository.findByDriverIdAndCreatedAtBetween(driverId, start, end).stream()
+                .map(deliveryMapper::toResponse)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public void deleteById(Long id) {
+    public DeliveryResponse saveDelivery(DeliveryRequest request) {
+        Delivery delivery = buildDeliveryFromRequest(request);
+        Delivery saved = deliveryRepository.save(delivery);
+        return deliveryMapper.toResponse(saved);
+    }
+
+    @Override
+    public DeliveryResponse updateDelivery(Long id, DeliveryRequest request) {
+        Delivery delivery = deliveryRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Delivery not found with id: " + id));
+        deliveryMapper.updateEntityFromRequest(request, delivery);
+        delivery.setOrder(orderRepository.findById(request.orderId())
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + request.orderId())));
+        delivery.setDriver(userRepository.findById(request.driverId())
+                .orElseThrow(() -> new ResourceNotFoundException("Driver not found with id: " + request.driverId())));
+        delivery.setDeliveryAddress(deliveryAddressRepository.findById(request.deliveryAddressId())
+                .orElseThrow(() -> new ResourceNotFoundException("Delivery address not found with id: " + request.deliveryAddressId())));
+        Delivery updated = deliveryRepository.save(delivery);
+        return deliveryMapper.toResponse(updated);
+    }
+
+    @Override
+    public DeliveryResponse deleteDeliveryById(Long id) {
+        Delivery delivery = deliveryRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Delivery not found with id: " + id));
         deliveryRepository.deleteById(id);
+        return deliveryMapper.toResponse(delivery);
+    }
 
+    @Override
+
+    public List<DeliveryResponse> searchDeliveries(Long driverId, Delivery.Status status, Long orderId, LocalDateTime start, LocalDateTime end) {
+        return deliveryRepository.findAll().stream()
+                .filter(d -> driverId == null || d.getDriver().getId().equals(driverId))
+                .filter(d -> status == null || d.getStatus() == status)
+                .filter(d -> orderId == null || d.getOrder().getId().equals(orderId))
+                .filter(d -> start == null || !d.getCreatedAt().isBefore(start))
+                .filter(d -> end == null || !d.getCreatedAt().isAfter(end))
+                .map(deliveryMapper::toResponse)
+                .collect(Collectors.toList());
+    }
+
+    private Delivery buildDeliveryFromRequest(DeliveryRequest request) {
+        Delivery delivery = deliveryMapper.toEntity(request);
+        delivery.setOrder(orderRepository.findById(request.orderId())
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + request.orderId())));
+        delivery.setDriver(userRepository.findById(request.driverId())
+                .orElseThrow(() -> new ResourceNotFoundException("Driver not found with id: " + request.driverId())));
+        delivery.setDeliveryAddress(deliveryAddressRepository.findById(request.deliveryAddressId())
+                .orElseThrow(() -> new ResourceNotFoundException("Delivery address not found with id: " + request.deliveryAddressId())));
+        return delivery;
     }
 }

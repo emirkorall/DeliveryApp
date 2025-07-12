@@ -1,28 +1,37 @@
 package com.emirkoral.deliveryapp.user;
 
+import com.emirkoral.deliveryapp.user.dto.UserRequest;
+import com.emirkoral.deliveryapp.user.dto.UserResponse;
+
 import java.util.List;
 import java.util.Optional;
 
 public interface UserService {
 
-    Optional<User> findById(Long id);
+    List<UserResponse> findAllUsers();
 
-    Optional<User> findByEmail(String email);
+    UserResponse findUserById(Long id);
 
-    Optional<User> findByPhone(String phone);
+    Optional<UserResponse> findByEmail(String email);
+
+    Optional<UserResponse> findByPhone(String phone);
 
     boolean existsByEmail(String email);
 
     boolean existsByPhone(String phone);
 
-    List<User> findByRole(User.UserRole role);
+    List<UserResponse> findByRole(User.UserRole role);
 
-    List<User> findByRoleAndIsActive(User.UserRole role, boolean isActive);
+    List<UserResponse> findByRoleAndIsActive(User.UserRole role, boolean isActive);
 
-    List<User> findNearbyDrivers(double lat, double lng, double radiusInMeters);
+    List<UserResponse> findNearbyDrivers(double lat, double lng, double radiusInMeters);
 
-    User save(User user);
+    List<UserResponse> searchUsers(String email, String phone, User.UserRole role, Boolean isActive);
 
-    void deleteById(Long id);
+    UserResponse saveUser(UserRequest request);
+
+    UserResponse updateUser(Long id, UserRequest userRequest);
+
+    UserResponse deleteUserById(Long id);
 
 }

@@ -1,18 +1,25 @@
 package com.emirkoral.deliveryapp.menuitem;
 
+import com.emirkoral.deliveryapp.menuitem.dto.MenuItemRequest;
+import com.emirkoral.deliveryapp.menuitem.dto.MenuItemResponse;
+
 import java.util.List;
-import java.util.Optional;
+
 
 public interface MenuItemService {
-    List<MenuItem> findAll();
+    List<MenuItemResponse> findAllMenuItems();
 
-    Optional<MenuItem> findById(Long id);
+    MenuItemResponse findMenuItemById(Long id);
 
-    List<MenuItem> findByRestaurantId(Long restaurantId);
+    List<MenuItemResponse> findByRestaurantId(Long restaurantId);
 
-    List<MenuItem> findByIsAvailable(boolean isAvailable);
+    List<MenuItemResponse> findByIsAvailable(boolean isAvailable);
 
-    MenuItem save(MenuItem menuItem);
+    MenuItemResponse saveMenuItem(MenuItemRequest request);
 
-    void deleteById(Long id);
+    MenuItemResponse updateMenuItem(Long id, MenuItemRequest request);
+
+    MenuItemResponse deleteMenuItemById(Long id);
+
+    List<MenuItemResponse> searchMenuItems(Long restaurantId, Boolean isAvailable, String name, Double minPrice, Double maxPrice);
 }

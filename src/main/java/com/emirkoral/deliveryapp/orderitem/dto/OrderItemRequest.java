@@ -4,6 +4,8 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
 public record OrderItemRequest(
+        @NotNull(message = "Order Id is required")
+        Long orderId,
         @NotNull(message = "Menu item ID is required")
         Long menuItemId,
         @NotNull(message = "Quantity is required")

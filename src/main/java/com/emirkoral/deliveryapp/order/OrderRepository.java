@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface OrderRepository extends JpaRepository<Order, Long> {
-    List<Order> findByCustomer(Long customerId);
+    List<Order> findByCustomerId (Long customerId);
 
     List<Order> findByRestaurantId(Long restaurantId);
 

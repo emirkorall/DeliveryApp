@@ -1,15 +1,15 @@
 package com.emirkoral.deliveryapp.deliveryadress;
 
+import com.emirkoral.deliveryapp.deliveryadress.dto.DeliveryAddressRequest;
+import com.emirkoral.deliveryapp.deliveryadress.dto.DeliveryAddressResponse;
+
 import java.util.List;
-import java.util.Optional;
 
 public interface DeliveryAddressService {
-
-    List<DeliveryAddress> findAll();
-
-    Optional<DeliveryAddress> findById(Long id);
-
-    DeliveryAddress save(DeliveryAddress deliveryAddress);
-
-    void deleteById(Long id);
+    List<DeliveryAddressResponse> findAllDeliveryAddresses();
+    DeliveryAddressResponse findDeliveryAddressById(Long id);
+    DeliveryAddressResponse saveDeliveryAddress(DeliveryAddressRequest request);
+    DeliveryAddressResponse updateDeliveryAddress(Long id, DeliveryAddressRequest request);
+    DeliveryAddressResponse deleteDeliveryAddressById(Long id);
+    List<DeliveryAddressResponse> searchDeliveryAddresses(String address, Double latitude, Double longitude, String apartment, String floor, String building, String instructions);
 }

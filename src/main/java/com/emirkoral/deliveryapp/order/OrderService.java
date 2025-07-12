@@ -1,23 +1,29 @@
 package com.emirkoral.deliveryapp.order;
 
+import com.emirkoral.deliveryapp.order.dto.OrderRequest;
+import com.emirkoral.deliveryapp.order.dto.OrderResponse;
+
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 public interface OrderService {
-    List<Order> findAll();
+    List<OrderResponse> findAllOrders();
 
-    Optional<Order> findById(Long id);
+    OrderResponse findOrderById(Long id);
 
-    List<Order> findByCustomerId(Long customerId);
+    List<OrderResponse> findOrdersByCustomerId(Long customerId);
 
-    List<Order> findByRestaurantId(Long restaurantId);
+    List<OrderResponse> findOrdersByRestaurantId(Long restaurantId);
 
-    List<Order> findByStatus(Order.Status status);
+    List<OrderResponse> findOrdersByStatus(Order.Status status);
 
-    List<Order> findByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
+    List<OrderResponse> findOrdersByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
 
-    Order save(Order order);
+    OrderResponse saveOrder(OrderRequest request);
 
-    void deleteById(Long id);
+    OrderResponse updateOrder(Long id, OrderRequest request);
+
+    OrderResponse deleteOrderById(Long id);
+
+    List<OrderResponse> searchOrders(Long customerId, Long restaurantId, Order.Status status, LocalDateTime start, LocalDateTime end);
 }

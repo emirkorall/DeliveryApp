@@ -1,24 +1,35 @@
 package com.emirkoral.deliveryapp.delivery;
 
 
+import com.emirkoral.deliveryapp.delivery.dto.DeliveryRequest;
+import com.emirkoral.deliveryapp.delivery.dto.DeliveryResponse;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
 public interface DeliveryService {
-    List<Delivery> findAll();
+    List<DeliveryResponse> findAllDeliveries();
 
-    Optional<Delivery> findById(Long id);
+    DeliveryResponse findDeliveryById(Long id);
 
-    List<Delivery> findByDriverId(Long driverId);
+    List<DeliveryResponse> findDeliveriesByDriverId(Long driverId);
 
-    List<Delivery> findByStatus(Delivery.Status status);
+    List<DeliveryResponse> findDeliveriesByStatus(Delivery.Status status);
 
-    List<Delivery> findByOrderId(Long orderId);
+    List<DeliveryResponse> findDeliveriesByOrderId(Long orderId);
 
-    List<Delivery> findByDriverIdAndCreatedAtBetween(Long driverId, LocalDateTime start, LocalDateTime end);
+    List<DeliveryResponse> findDeliveriesByDriverIdAndCreatedAtBetween(Long driverId, LocalDateTime start, LocalDateTime end);
 
-    Delivery save(Delivery delivery);
+    List<DeliveryResponse> findByDriverIdAndCreatedAtBetween(Long driverId, LocalDateTime start, LocalDateTime end);
 
-    void deleteById(Long id);
+    DeliveryResponse saveDelivery(DeliveryRequest request);
+
+    DeliveryResponse updateDelivery(Long id, DeliveryRequest request);
+
+    DeliveryResponse deleteDeliveryById(Long id);
+
+    List<DeliveryResponse> searchDeliveries(Long driverId, Delivery.Status status, Long orderId, LocalDateTime start, LocalDateTime end);
+
+
 }

@@ -1,16 +1,24 @@
 package com.emirkoral.deliveryapp.payment;
 
+import com.emirkoral.deliveryapp.payment.dto.PaymentRequest;
+import com.emirkoral.deliveryapp.payment.dto.PaymentResponse;
+
 import java.util.List;
 import java.util.Optional;
 
 public interface PaymentService {
-    List<Payment> findAll();
+    List<PaymentResponse> findAllPayments();
 
-    Optional<Payment> findById(Long id);
+    PaymentResponse findPaymentById(Long id);
 
-    Optional<Payment> findByOrderId(Long orderId);
+    PaymentResponse findPaymentByOrderId(Long orderId);
 
-    Payment save(Payment payment);
+    PaymentResponse savePayment(PaymentRequest paymentRequest);
 
-    void deleteById(Long id);
+    PaymentResponse updatePayment(Long id, PaymentRequest request);
+
+    PaymentResponse deletePaymentById(Long id);
+
+    List<PaymentResponse> searchPayments(Double amount, Payment.PaymentMethod paymentMethod, Payment.Status status, String transactionId, Long orderId
+    );
 }
