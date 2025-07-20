@@ -5,6 +5,7 @@ import com.emirkoral.deliveryapp.restaurant.Restaurant;
 import com.emirkoral.deliveryapp.restaurant.dto.RestaurantRequest;
 import com.emirkoral.deliveryapp.restaurant.dto.RestaurantResponse;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 
 

@@ -5,6 +5,7 @@ import com.emirkoral.deliveryapp.order.Order;
 import com.emirkoral.deliveryapp.order.dto.OrderRequest;
 import com.emirkoral.deliveryapp.order.dto.OrderResponse;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 
 @Mapper(componentModel = "spring")

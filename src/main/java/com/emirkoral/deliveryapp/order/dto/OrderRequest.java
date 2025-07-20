@@ -13,6 +13,6 @@ public record OrderRequest(
         Long restaurantId,
         @NotNull(message = "Order items are required")
         List<@NotNull OrderItemRequest> items,
-        String specialInstruction
+        String specialInstructions
         ) {
 }

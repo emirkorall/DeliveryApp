@@ -14,6 +14,16 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import io.github.bucket4j.Bandwidth;
+import io.github.bucket4j.Bucket;
+import io.github.bucket4j.Bucket4j;
+import io.github.bucket4j.Refill;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
+import java.time.Duration;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -24,6 +34,7 @@ public class OrderController {
 
     private final OrderService orderService;
     private final SimpMessagingTemplate simpMessagingTemplate;
+    private final Map<String, Bucket> buckets = new ConcurrentHashMap<>();
 
     @Autowired
     private AssignmentService assignmentService;
@@ -31,6 +42,12 @@ public class OrderController {
     public OrderController(OrderService orderService, SimpMessagingTemplate simpMessagingTemplate) {
         this.orderService = orderService;
         this.simpMessagingTemplate = simpMessagingTemplate;
+    }
+
+    private Bucket resolveOrderBucket(String ip) {
+        return buckets.computeIfAbsent("order-" + ip, k -> Bucket4j.builder()
+                .addLimit(Bandwidth.classic(10, Refill.greedy(10, Duration.ofMinutes(1))))
+                .build());
     }
 
     @GetMapping
@@ -58,9 +75,15 @@ public class OrderController {
     }
 
     @PostMapping
-    public ResponseEntity<OrderResponse> createOrder(@RequestBody @Valid OrderRequest request) {
-        OrderResponse created = orderService.saveOrder(request);
-        return ResponseEntity.status(201).body(created);
+    public ResponseEntity<OrderResponse> createOrder(@RequestBody @Valid OrderRequest request, HttpServletRequest httpRequest) {
+        String ip = httpRequest.getRemoteAddr();
+        Bucket bucket = resolveOrderBucket(ip);
+        if (bucket.tryConsume(1)) {
+            OrderResponse created = orderService.saveOrder(request);
+            return ResponseEntity.status(201).body(created);
+        } else {
+            throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS, "Too many order attempts. Please try again later.");
+        }
     }
 
     @PutMapping("/{id}")

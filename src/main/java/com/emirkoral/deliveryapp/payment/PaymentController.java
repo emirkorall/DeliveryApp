@@ -7,15 +7,32 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import io.github.bucket4j.Bandwidth;
+import io.github.bucket4j.Bucket;
+import io.github.bucket4j.Bucket4j;
+import io.github.bucket4j.Refill;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
+import java.time.Duration;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @RestController
 @RequestMapping("/api/payments")
 public class PaymentController {
 
     private final PaymentService paymentService;
+    private final Map<String, Bucket> buckets = new ConcurrentHashMap<>();
 
     public PaymentController(PaymentService paymentService) {
         this.paymentService = paymentService;
+    }
+
+    private Bucket resolvePaymentBucket(String ip) {
+        return buckets.computeIfAbsent("payment-" + ip, k -> Bucket4j.builder()
+                .addLimit(Bandwidth.classic(5, Refill.greedy(5, Duration.ofMinutes(1))))
+                .build());
     }
 
     @GetMapping
@@ -46,9 +63,15 @@ public class PaymentController {
     }
 
     @PostMapping
-    public ResponseEntity<PaymentResponse> createPayment(@RequestBody @Valid PaymentRequest request) {
-        PaymentResponse created = paymentService.savePayment(request);
-        return ResponseEntity.status(201).body(created);
+    public ResponseEntity<PaymentResponse> createPayment(@RequestBody @Valid PaymentRequest request, HttpServletRequest httpRequest) {
+        String ip = httpRequest.getRemoteAddr();
+        Bucket bucket = resolvePaymentBucket(ip);
+        if (bucket.tryConsume(1)) {
+            PaymentResponse created = paymentService.savePayment(request);
+            return ResponseEntity.status(201).body(created);
+        } else {
+            throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS, "Too many payment attempts. Please try again later.");
+        }
     }
 
     @PutMapping("/{id}")
