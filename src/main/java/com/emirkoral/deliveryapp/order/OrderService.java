@@ -26,4 +26,6 @@ public interface OrderService {
     OrderResponse deleteOrderById(Long id);
 
     List<OrderResponse> searchOrders(Long customerId, Long restaurantId, Order.Status status, LocalDateTime start, LocalDateTime end);
+
+    void updateOrderStatus(Long orderId, String newStatus, String message);
 }

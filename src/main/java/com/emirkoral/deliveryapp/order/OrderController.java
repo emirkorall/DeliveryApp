@@ -3,10 +3,17 @@ package com.emirkoral.deliveryapp.order;
 
 import com.emirkoral.deliveryapp.order.dto.OrderRequest;
 import com.emirkoral.deliveryapp.order.dto.OrderResponse;
+import com.emirkoral.deliveryapp.order.dto.OrderStatusRequest;
+import com.emirkoral.deliveryapp.order.dto.CourierLocationRequest;
+import com.emirkoral.deliveryapp.assignment.dto.AssignmentRequest;
+import com.emirkoral.deliveryapp.assignment.dto.AssignmentResponse;
+import com.emirkoral.deliveryapp.assignment.AssignmentService;
 import jakarta.validation.Valid;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -16,9 +23,14 @@ import java.util.List;
 public class OrderController {
 
     private final OrderService orderService;
+    private final SimpMessagingTemplate simpMessagingTemplate;
 
-    public OrderController(OrderService orderService) {
+    @Autowired
+    private AssignmentService assignmentService;
+
+    public OrderController(OrderService orderService, SimpMessagingTemplate simpMessagingTemplate) {
         this.orderService = orderService;
+        this.simpMessagingTemplate = simpMessagingTemplate;
     }
 
     @GetMapping
@@ -57,11 +69,40 @@ public class OrderController {
         return ResponseEntity.ok(updated);
     }
 
+    @PutMapping("/{id}/status")
+    public ResponseEntity<Void> updateOrderStatus(@PathVariable Long id, @RequestBody @Valid OrderStatusRequest request) {
+        orderService.updateOrderStatus(id, request.status(), request.message());
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/couriers/location")
+    public ResponseEntity<Void> updateCourierLocation(@RequestBody @Valid CourierLocationRequest request) {
+
+        String destination = "/topic/courier-location/" + request.orderId();
+        simpMessagingTemplate.convertAndSend(destination, request);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/assign")
+    public ResponseEntity<AssignmentResponse> assignOrderToCourier(@RequestBody @Valid AssignmentRequest request) {
+        AssignmentResponse response = assignmentService.createAssignment(request);
+        // WebSocket notification is used here to notify the courier about the new assignment in real time
+        String destination = "/topic/assignments/" + response.courierId();
+        simpMessagingTemplate.convertAndSend(destination, response);
+        return ResponseEntity.ok(response);
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<OrderResponse> deleteOrder(@PathVariable Long id) {
         OrderResponse deleted = orderService.deleteOrderById(id);
         return ResponseEntity.ok(deleted);
     }
 
+    // Endpoint for live order list: returns the WebSocket channel for a specific restaurant
+    @GetMapping("/restaurant/{restaurantId}/live")
+    public ResponseEntity<String> getLiveOrderChannel(@PathVariable Long restaurantId) {
+        // The frontend can use this endpoint to learn which WebSocket channel to subscribe to for live orders
+        return ResponseEntity.ok("/topic/orders/" + restaurantId);
+    }
 
 }

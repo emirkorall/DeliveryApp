@@ -2,10 +2,12 @@ package com.emirkoral.deliveryapp.order;
 
 import com.emirkoral.deliveryapp.order.dto.OrderRequest;
 import com.emirkoral.deliveryapp.order.dto.OrderResponse;
+import com.emirkoral.deliveryapp.order.dto.OrderStatusResponse;
 import com.emirkoral.deliveryapp.order.mapper.OrderMapper;
 import com.emirkoral.deliveryapp.exception.ResourceNotFoundException;
 import com.emirkoral.deliveryapp.user.UserRepository;
 import com.emirkoral.deliveryapp.restaurant.RestaurantRepository;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -19,12 +21,14 @@ public class OrderServiceImpl implements OrderService {
     private final OrderMapper orderMapper;
     private final UserRepository userRepository;
     private final RestaurantRepository restaurantRepository;
+    private final SimpMessagingTemplate simpMessagingTemplate;
 
-    public OrderServiceImpl(OrderRepository orderRepository, OrderMapper orderMapper, UserRepository userRepository, RestaurantRepository restaurantRepository) {
+    public OrderServiceImpl(OrderRepository orderRepository, OrderMapper orderMapper, UserRepository userRepository, RestaurantRepository restaurantRepository, SimpMessagingTemplate simpMessagingTemplate) {
         this.orderRepository = orderRepository;
         this.orderMapper = orderMapper;
         this.userRepository = userRepository;
         this.restaurantRepository = restaurantRepository;
+        this.simpMessagingTemplate = simpMessagingTemplate;
     }
 
     @Override
@@ -116,5 +120,16 @@ public class OrderServiceImpl implements OrderService {
         order.setRestaurant(restaurantRepository.findById(request.restaurantId())
                 .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found with id: " + request.restaurantId())));
         return order;
+    }
+
+    @Override
+    public void updateOrderStatus(Long orderId, String newStatus, String message) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + orderId));
+        order.setStatus(Order.Status.valueOf(newStatus));
+        orderRepository.save(order);
+
+        OrderStatusResponse response = new OrderStatusResponse(orderId, newStatus, message);
+        simpMessagingTemplate.convertAndSend("/topic/order-status", response);
     }
 }
