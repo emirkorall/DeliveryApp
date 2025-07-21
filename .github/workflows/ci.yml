@@ -13,6 +13,7 @@ jobs:
       DB_URL: jdbc:h2:mem:testdb
       DB_USERNAME: sa
       DB_PASSWORD:
+      DB_DRIVER: org.h2.Driver
       JWT_SECRET: testsecretkeyforgithubactionstestsecretkey
       JWT_EXPIRATION: 86400000
     steps:
