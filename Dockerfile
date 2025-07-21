@@ -1,5 +1,5 @@
 # Base image
-FROM eclipse-temurin:17-jdk-alpine
+FROM --platform=linux/amd64 eclipse-temurin:17-jdk-alpine
 
 # Working directory
 WORKDIR /app
