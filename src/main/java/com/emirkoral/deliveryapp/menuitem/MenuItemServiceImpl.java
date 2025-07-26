@@ -5,10 +5,14 @@ import com.emirkoral.deliveryapp.exception.ResourceNotFoundException;
 import com.emirkoral.deliveryapp.menuitem.dto.MenuItemRequest;
 import com.emirkoral.deliveryapp.menuitem.dto.MenuItemResponse;
 import com.emirkoral.deliveryapp.menuitem.mapper.MenuItemMapper;
+import com.emirkoral.deliveryapp.restaurant.Restaurant;
 import com.emirkoral.deliveryapp.restaurant.RestaurantRepository;
+import com.emirkoral.deliveryapp.user.User;
+import com.emirkoral.deliveryapp.util.AuthorizationUtil;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -55,6 +59,11 @@ public class MenuItemServiceImpl implements MenuItemService {
 
     @Override
     public MenuItemResponse saveMenuItem(MenuItemRequest request) {
+        Restaurant restaurant = restaurantRepository.findById(request.restaurantId())
+                .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found with id: " + request.restaurantId()));
+        String ownerEmail = restaurant.getOwner() != null ? restaurant.getOwner().getEmail() : null;
+        AuthorizationUtil.check(Collections.singleton(User.UserRole.ADMIN), ownerEmail);
+
         MenuItem menuItem = buildMenuItemFromRequest(request);
         MenuItem saved = menuItemRepository.save(menuItem);
         return menuItemMapper.toResponse(saved);
@@ -64,6 +73,9 @@ public class MenuItemServiceImpl implements MenuItemService {
     public MenuItemResponse updateMenuItem(Long id, MenuItemRequest request) {
         MenuItem menuItem = menuItemRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Menu item not found with id: " + id));
+        String ownerEmail = menuItem.getRestaurant().getOwner() != null ? menuItem.getRestaurant().getOwner().getEmail() : null;
+        AuthorizationUtil.check(Collections.singleton(User.UserRole.ADMIN), ownerEmail);
+
         menuItemMapper.updateEntityFromRequest(request, menuItem);
         menuItem.setRestaurant(restaurantRepository.findById(request.restaurantId())
                 .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found with id: " + request.restaurantId())));
@@ -75,9 +87,11 @@ public class MenuItemServiceImpl implements MenuItemService {
     public MenuItemResponse deleteMenuItemById(Long id) {
         MenuItem menuItem = menuItemRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Menu item not found with id: " + id));
+        String ownerEmail = menuItem.getRestaurant().getOwner() != null ? menuItem.getRestaurant().getOwner().getEmail() : null;
+        AuthorizationUtil.check(Collections.singleton(User.UserRole.ADMIN), ownerEmail);
+
         menuItemRepository.deleteById(id);
         return menuItemMapper.toResponse(menuItem);
-
     }
 
     @Override

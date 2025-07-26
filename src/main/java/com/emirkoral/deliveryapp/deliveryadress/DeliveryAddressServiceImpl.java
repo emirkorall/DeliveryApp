@@ -4,8 +4,11 @@ import com.emirkoral.deliveryapp.deliveryadress.dto.DeliveryAddressRequest;
 import com.emirkoral.deliveryapp.deliveryadress.dto.DeliveryAddressResponse;
 import com.emirkoral.deliveryapp.deliveryadress.mapper.DeliveryAddressMapper;
 import com.emirkoral.deliveryapp.exception.ResourceNotFoundException;
+import com.emirkoral.deliveryapp.util.AuthorizationUtil;
+import com.emirkoral.deliveryapp.user.User;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -22,6 +25,7 @@ public class DeliveryAddressServiceImpl implements DeliveryAddressService {
 
     @Override
     public List<DeliveryAddressResponse> findAllDeliveryAddresses() {
+        AuthorizationUtil.check(Collections.singleton(User.UserRole.ADMIN));
         return deliveryAddressRepository.findAll().stream()
                 .map(deliveryAddressMapper::toResponse)
                 .collect(Collectors.toList());
@@ -31,11 +35,21 @@ public class DeliveryAddressServiceImpl implements DeliveryAddressService {
     public DeliveryAddressResponse findDeliveryAddressById(Long id) {
         DeliveryAddress address = deliveryAddressRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Delivery address not found with id: " + id));
+
+        String customerEmail = address.getDelivery() != null && address.getDelivery().getOrder() != null &&
+                address.getDelivery().getOrder().getCustomer() != null ?
+                address.getDelivery().getOrder().getCustomer().getEmail() : null;
+        String driverEmail = address.getDelivery() != null && address.getDelivery().getDriver() != null ?
+                address.getDelivery().getDriver().getEmail() : null;
+
+        AuthorizationUtil.check(Collections.singleton(User.UserRole.ADMIN), customerEmail, driverEmail);
+
         return deliveryAddressMapper.toResponse(address);
     }
 
     @Override
     public DeliveryAddressResponse saveDeliveryAddress(DeliveryAddressRequest request) {
+        AuthorizationUtil.check(Collections.singleton(User.UserRole.ADMIN));
         DeliveryAddress address = deliveryAddressMapper.toEntity(request);
         DeliveryAddress saved = deliveryAddressRepository.save(address);
         return deliveryAddressMapper.toResponse(saved);
@@ -43,6 +57,7 @@ public class DeliveryAddressServiceImpl implements DeliveryAddressService {
 
     @Override
     public DeliveryAddressResponse updateDeliveryAddress(Long id, DeliveryAddressRequest request) {
+        AuthorizationUtil.check(Collections.singleton(User.UserRole.ADMIN));
         DeliveryAddress address = deliveryAddressRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Delivery address not found with id: " + id));
         deliveryAddressMapper.updateEntityFromRequest(request, address);
@@ -52,6 +67,7 @@ public class DeliveryAddressServiceImpl implements DeliveryAddressService {
 
     @Override
     public DeliveryAddressResponse deleteDeliveryAddressById(Long id) {
+        AuthorizationUtil.check(Collections.singleton(User.UserRole.ADMIN));
         DeliveryAddress address = deliveryAddressRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Delivery address not found with id: " + id));
         deliveryAddressRepository.deleteById(id);
@@ -60,6 +76,7 @@ public class DeliveryAddressServiceImpl implements DeliveryAddressService {
 
     @Override
     public List<DeliveryAddressResponse> searchDeliveryAddresses(String address, Double latitude, Double longitude, String apartment, String floor, String building, String instructions) {
+        AuthorizationUtil.check(Collections.singleton(User.UserRole.ADMIN));
         return deliveryAddressRepository.findAll().stream()
                 .filter(a -> address == null || (a.getAddress() != null && a.getAddress().toLowerCase().contains(address.toLowerCase())))
                 .filter(a -> latitude == null || (a.getLatitude() != null && a.getLatitude().equals(latitude)))

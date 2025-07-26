@@ -2,6 +2,7 @@ package com.emirkoral.deliveryapp.order;
 
 
 import com.emirkoral.deliveryapp.delivery.Delivery;
+import com.emirkoral.deliveryapp.deliveryadress.DeliveryAddress;
 import com.emirkoral.deliveryapp.orderitem.OrderItem;
 import com.emirkoral.deliveryapp.payment.Payment;
 import com.emirkoral.deliveryapp.restaurant.Restaurant;
@@ -79,6 +80,10 @@ public class Order {
 
     @OneToOne(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Payment payment;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "delivery_address_id")
+    private DeliveryAddress deliveryAddress;
 
 
     public enum Status {

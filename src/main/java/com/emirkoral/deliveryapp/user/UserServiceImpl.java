@@ -5,9 +5,10 @@ import com.emirkoral.deliveryapp.exception.ResourceNotFoundException;
 import com.emirkoral.deliveryapp.user.dto.UserRequest;
 import com.emirkoral.deliveryapp.user.dto.UserResponse;
 import com.emirkoral.deliveryapp.user.mapper.UserMapper;
-import jakarta.validation.constraints.NotNull;
+import com.emirkoral.deliveryapp.util.AuthorizationUtil;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -25,6 +26,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<UserResponse> findAllUsers() {
+        AuthorizationUtil.check(Collections.singleton(User.UserRole.ADMIN));
         return userRepository.findAll()
                 .stream()
                 .map(userMapper::toResponse)
@@ -34,17 +36,21 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponse findUserById(Long id) {
         User user = userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
+        AuthorizationUtil.check(Collections.singleton(User.UserRole.ADMIN), user.getEmail());
         return userMapper.toResponse(user);
     }
 
     @Override
     public Optional<UserResponse> findByEmail(String email) {
+        AuthorizationUtil.check(Collections.singleton(User.UserRole.ADMIN), email);
         return userRepository.findByEmail(email).map(userMapper::toResponse);
     }
 
     @Override
     public Optional<UserResponse> findByPhone(String phone) {
-        return userRepository.findByPhone(phone).map(userMapper::toResponse);
+        User user = userRepository.findByPhone(phone).orElseThrow(() -> new ResourceNotFoundException("User not found with phone: " + phone));
+        AuthorizationUtil.check(Collections.singleton(User.UserRole.ADMIN), user.getEmail());
+        return Optional.of(userMapper.toResponse(user));
     }
 
     @Override
@@ -59,6 +65,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<UserResponse> findByRole(User.UserRole role) {
+        AuthorizationUtil.check(Collections.singleton(User.UserRole.ADMIN));
         return userRepository.findByRole(role)
                 .stream()
                 .map(userMapper::toResponse)
@@ -67,6 +74,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<UserResponse> findByRoleAndIsActive(User.UserRole role, boolean isActive) {
+        AuthorizationUtil.check(Collections.singleton(User.UserRole.ADMIN));
         return userRepository.findByRoleAndIsActive(role, isActive)
                 .stream()
                 .map(userMapper::toResponse)
@@ -84,6 +92,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponse saveUser(UserRequest request) {
+        AuthorizationUtil.check(Collections.singleton(User.UserRole.ADMIN));
         User user = userMapper.toEntity(request);
         User saved = userRepository.save(user);
         return userMapper.toResponse(saved);
@@ -93,6 +102,7 @@ public class UserServiceImpl implements UserService {
     public UserResponse updateUser(Long id, UserRequest userRequest) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
+        AuthorizationUtil.check(Collections.singleton(User.UserRole.ADMIN), user.getEmail());
         // Email and phone check if changed(uniqueness)
         if (!user.getEmail().equals(userRequest.email()) && userRepository.existsByEmail(userRequest.email())) {
             throw new BadRequestException("Email already in use");
@@ -107,13 +117,16 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponse deleteUserById(Long id) {
+        AuthorizationUtil.check(Collections.singleton(User.UserRole.ADMIN));
         User user = userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
+        userRepository.delete(user);
         return userMapper.toResponse(user);
     }
 
     // Filters users by optional email, phone, role, and active status, then maps them to response DTOs.
     @Override
     public List<UserResponse> searchUsers(String email, String phone, User.UserRole role, Boolean isActive) {
+        AuthorizationUtil.check(Collections.singleton(User.UserRole.ADMIN));
         return userRepository.findAll().stream()
                 .filter(user -> email == null || user.getEmail().equalsIgnoreCase(email))
                 .filter(user -> phone == null || user.getPhone().equals(phone))
@@ -122,6 +135,4 @@ public class UserServiceImpl implements UserService {
                 .map(userMapper::toResponse)
                 .collect(Collectors.toList());
     }
-
-
 }

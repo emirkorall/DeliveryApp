@@ -4,11 +4,13 @@ import com.emirkoral.deliveryapp.exception.ResourceNotFoundException;
 import com.emirkoral.deliveryapp.restaurant.dto.RestaurantRequest;
 import com.emirkoral.deliveryapp.restaurant.dto.RestaurantResponse;
 import com.emirkoral.deliveryapp.restaurant.mapper.RestaurantMapper;
+import com.emirkoral.deliveryapp.user.User;
 import com.emirkoral.deliveryapp.user.UserRepository;
+import com.emirkoral.deliveryapp.util.AuthorizationUtil;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 
@@ -42,6 +44,10 @@ public class RestaurantServiceImpl implements RestaurantService {
 
     @Override
     public List<RestaurantResponse> findByOwnerId(Long ownerId) {
+        User owner = userRepository.findById(ownerId)
+                .orElseThrow(() -> new ResourceNotFoundException("Owner not found with id: " + ownerId));
+        AuthorizationUtil.check(Collections.singleton(User.UserRole.ADMIN), owner.getEmail());
+
         return restaurantRepository.findByOwnerId(ownerId)
                 .stream()
                 .map(restaurantMapper::toResponse)
@@ -78,6 +84,10 @@ public class RestaurantServiceImpl implements RestaurantService {
 
     @Override
     public RestaurantResponse saveRestaurant(RestaurantRequest request) {
+        User owner = userRepository.findById(request.ownerId())
+                .orElseThrow(() -> new ResourceNotFoundException("Owner not found with id: " + request.ownerId()));
+        AuthorizationUtil.check(Collections.singleton(User.UserRole.ADMIN), owner.getEmail());
+
         Restaurant restaurant = buildRestaurantFromRequest(request);
         Restaurant saved = restaurantRepository.save(restaurant);
         return restaurantMapper.toResponse(saved);
@@ -87,6 +97,9 @@ public class RestaurantServiceImpl implements RestaurantService {
     public RestaurantResponse updateRestaurant(Long id, RestaurantRequest request) {
         Restaurant restaurant = restaurantRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found with id: " + id));
+        String ownerEmail = restaurant.getOwner() != null ? restaurant.getOwner().getEmail() : null;
+        AuthorizationUtil.check(Collections.singleton(User.UserRole.ADMIN), ownerEmail);
+
         restaurantMapper.updateEntityFromRequest(request, restaurant);
         restaurant.setOwner(userRepository.findById(request.ownerId())
                 .orElseThrow(() -> new ResourceNotFoundException("Owner not found with id: " + request.ownerId())));
@@ -98,6 +111,9 @@ public class RestaurantServiceImpl implements RestaurantService {
     public RestaurantResponse deleteRestaurantById(Long id) {
         Restaurant restaurant = restaurantRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found with id: " + id));
+        String ownerEmail = restaurant.getOwner() != null ? restaurant.getOwner().getEmail() : null;
+        AuthorizationUtil.check(Collections.singleton(User.UserRole.ADMIN), ownerEmail);
+
         restaurantRepository.deleteById(id);
         return restaurantMapper.toResponse(restaurant);
 

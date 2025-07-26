@@ -25,5 +25,7 @@ jobs:
           distribution: 'temurin'
       - name: Build with Maven
         run: ./mvnw clean verify
+      - name: Check target directory
+        run: ls -la target/ || echo "Target directory not found"
       - name: Build Docker image
         run: docker build -t deliveryapp:latest . 
