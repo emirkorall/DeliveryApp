@@ -124,6 +124,7 @@ JWT_SECRET=your-base64-encoded-secret
 
 **Emir Koral**
 - GitHub: [@emirkorall](https://github.com/emirkorall)
+- LinkedIn: (https://www.linkedin.com/in/emirkoral/)
 
 ---
 
