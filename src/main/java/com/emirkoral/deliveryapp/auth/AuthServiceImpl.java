@@ -71,6 +71,7 @@ public class AuthServiceImpl implements AuthService {
         }
         User user = authMapper.toUser(request);
         user.setPassword(passwordEncoder.encode(request.password()));
+        user.setIsActive(true);
         userRepository.save(user);
         UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());
         String accessToken = jwtUtil.generateAccessToken(userDetails);

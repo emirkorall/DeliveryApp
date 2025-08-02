@@ -12,9 +12,11 @@ import com.emirkoral.deliveryapp.user.User;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -106,6 +108,11 @@ public class OrderServiceImpl implements OrderService {
         AuthorizationUtil.check(Collections.singleton(User.UserRole.ADMIN), email);
 
         Order order = buildOrderFromRequest(request);
+        order.setOrderNumber(UUID.randomUUID().toString());
+        order.setStatus(Order.Status.PENDING);
+        order.setSubtotal(BigDecimal.ZERO);
+        order.setTax(BigDecimal.ZERO);
+        order.setTotalAmount(BigDecimal.ZERO);
         Order saved = orderRepository.save(order);
         return orderMapper.toResponse(saved);
     }

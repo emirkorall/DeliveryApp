@@ -58,7 +58,7 @@ public class AuthController {
         String ip = httpRequest.getRemoteAddr();
         Bucket bucket = resolveSignupBucket(ip);
         if (bucket.tryConsume(1)) {
-            return ResponseEntity.ok(authService.signup(request));
+            return ResponseEntity.status(HttpStatus.CREATED).body(authService.signup(request));
         } else {
             throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS, "Too many signup attempts. Please try again later.");
         }
