@@ -44,7 +44,7 @@ class AuthServiceImplTest {
     void setUp() throws Exception {
         MockitoAnnotations.openMocks(this);
         jwtUtil = new JwtUtil();
-        setField(jwtUtil, "secret", "dGVzdHNlY3JldHRlc3RzZWNyZXR0ZXN0c2VjcmV0dGVzdHNlY3JldA==");
+        setField(jwtUtil, "secret", "dGVzdC1zZWNyZXQta2V5LWZvci10ZXN0aW5nLW9ubHk=");
         setField(jwtUtil, "expiration", 3600000L);
         setField(jwtUtil, "refreshExpiration", 7200000L);
 

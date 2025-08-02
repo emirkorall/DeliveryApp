@@ -14,7 +14,7 @@ jobs:
       DB_USERNAME: sa
       DB_PASSWORD:
       DB_DRIVER: org.h2.Driver
-      JWT_SECRET: testsecretkeyforgithubactionstestsecretkey
+      JWT_SECRET: dGVzdHNlY3JldHRlc3RzZWNyZXR0ZXN0c2VjcmV0dGVzdHNlY3JldA==
       JWT_EXPIRATION: 86400000
     steps:
       - uses: actions/checkout@v4
