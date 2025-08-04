@@ -43,11 +43,8 @@ RUN chown -R appuser:appgroup /app
 # Switch to app user
 USER appuser
 
-# Set PORT environment variable
-ENV PORT=8080
-
-# Expose port
-EXPOSE 8080
+# Expose port (Render.com will set PORT environment variable)
+EXPOSE ${PORT:-8080}
 
 # Start application
 ENTRYPOINT ["java", "-jar", "app.jar"] 
