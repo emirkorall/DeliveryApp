@@ -46,5 +46,5 @@ USER appuser
 # Expose port 8080 (Render.com standard)
 EXPOSE 8080
 
-# Start application with explicit port binding
-ENTRYPOINT ["sh", "-c", "java -jar app.jar --server.port=${PORT:-8080}"] 
+# Start application with environment variable
+ENTRYPOINT ["sh", "-c", "PORT=${PORT:-8080} && java -jar app.jar"] 
