@@ -43,12 +43,8 @@ RUN chown -R appuser:appgroup /app
 # Switch to app user
 USER appuser
 
-# Expose port (Render.com will use $PORT environment variable)
-EXPOSE ${PORT:-8080}
-
-# Health check (Render.com will handle this)
-# HEALTHCHECK --interval=30s --timeout=3s --start-period=60s --retries=3 \
-#   CMD curl -f http://localhost:${PORT:-8080}/actuator/health || exit 1
+# Expose port
+EXPOSE 8080
 
 # Start application
 ENTRYPOINT ["java", "-jar", "app.jar"] 
