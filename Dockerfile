@@ -43,6 +43,9 @@ RUN chown -R appuser:appgroup /app
 # Switch to app user
 USER appuser
 
+# Set PORT environment variable
+ENV PORT=8080
+
 # Expose port
 EXPOSE 8080
 
