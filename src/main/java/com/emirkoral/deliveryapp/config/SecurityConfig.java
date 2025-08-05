@@ -37,7 +37,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers("/api/auth/login", "/api/auth/signup", "/swagger-ui/**", "/swagger-ui.html", "/api-docs/**", "/v3/api-docs/**").permitAll()
-                        .requestMatchers("/actuator/health", "/actuator/info").hasRole("ADMIN")
+                        .requestMatchers("/actuator/health", "/actuator/info", "/health", "/").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/restaurants/**", "/api/menu-items/**", "/api/reviews/**").permitAll()
                         .requestMatchers("/api/v1/users/**").hasRole("ADMIN")
                         .requestMatchers("/api/v1/restaurants/**", "/api/v1/menu-items/**").hasAnyRole("RESTAURANT_OWNER", "ADMIN")
